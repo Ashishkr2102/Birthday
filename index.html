@@ -1,0 +1,785 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Birthday.exe</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #020403;
+            color: #00ff88;
+            font-family: "Courier New", monospace;
+            overflow-x: hidden;
+        }
+
+        /* MATRIX BACKGROUND */
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            opacity: 0.18;
+        }
+
+        /* TERMINAL */
+
+        .terminal {
+            width: 900px;
+            max-width: 94%;
+            margin: 50px auto;
+            background: rgba(2, 7, 5, 0.94);
+            border: 1px solid #00ff88;
+            border-radius: 12px;
+            box-shadow:
+                0 0 20px rgba(0, 255, 136, 0.25),
+                inset 0 0 30px rgba(0, 255, 136, 0.03);
+            overflow: hidden;
+        }
+
+        /* TOP BAR */
+
+        .topbar {
+            height: 45px;
+            background: #101513;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            border-bottom: 1px solid #00ff88;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 7px;
+        }
+
+        .red {
+            background: #ff5f56;
+        }
+
+        .yellow {
+            background: #ffbd2e;
+        }
+
+        .green {
+            background: #27c93f;
+        }
+
+        .title {
+            margin-left: 15px;
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        /* CONTENT */
+
+        .content {
+            padding: 35px;
+        }
+
+        .line {
+            margin-bottom: 14px;
+            line-height: 1.6;
+        }
+
+        .white {
+            color: white;
+        }
+
+        .cyan {
+            color: #00ffff;
+        }
+
+        .yellow-text {
+            color: #ffff00;
+        }
+
+        .red-text {
+            color: #ff4444;
+        }
+
+        /* LOADING */
+
+        .loading {
+            width: 100%;
+            height: 18px;
+            border: 1px solid #00ff88;
+            margin: 25px 0;
+            padding: 2px;
+        }
+
+        .loading-bar {
+            height: 100%;
+            width: 0%;
+            background: #00ff88;
+            box-shadow: 0 0 10px #00ff88;
+            transition: width 0.2s;
+        }
+
+        /* BIRTHDAY */
+
+        #birthday {
+            display: none;
+            text-align: center;
+            margin: 45px 0 30px;
+        }
+
+        .glitch {
+            font-size: 42px;
+            font-weight: bold;
+            color: #00ffff;
+            text-shadow:
+                3px 3px #ff004c,
+                -3px -3px #00ff88;
+            animation: glitch 1s infinite;
+        }
+
+        @keyframes glitch {
+            0% {
+                transform: translate(0);
+            }
+
+            20% {
+                transform: translate(-2px, 2px);
+            }
+
+            40% {
+                transform: translate(2px, -2px);
+            }
+
+            60% {
+                transform: translate(-1px, 1px);
+            }
+
+            80% {
+                transform: translate(1px, -1px);
+            }
+
+            100% {
+                transform: translate(0);
+            }
+        }
+
+        /* PHOTO */
+
+        .photo-box {
+            width: 230px;
+            height: 230px;
+            margin: 25px auto;
+            border: 2px dashed #00ff88;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.25);
+        }
+
+        .photo-box::before {
+            content: "PHOTO";
+            position: absolute;
+            top: 8px;
+            left: 10px;
+            font-size: 11px;
+            color: #00ff88;
+        }
+
+        .photo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .photo-placeholder {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            padding: 20px;
+        }
+
+        /* MESSAGE */
+
+        .message {
+            border: 1px solid #00ff88;
+            padding: 25px;
+            margin-top: 25px;
+            background: rgba(0, 255, 136, 0.03);
+            line-height: 1.9;
+            color: #ddd;
+        }
+
+        .message span {
+            color: #00ff88;
+        }
+
+        /* BUTTON */
+
+        button {
+            display: block;
+            margin: 30px auto 5px;
+            padding: 14px 25px;
+            background: transparent;
+            color: #00ff88;
+            border: 1px solid #00ff88;
+            font-family: "Courier New", monospace;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #00ff88;
+            color: #000;
+            box-shadow: 0 0 25px #00ff88;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* SECRET */
+
+        #secret {
+            display: none;
+            text-align: center;
+            margin-top: 25px;
+            color: #ffff00;
+            font-size: 18px;
+        }
+
+        /* FOOTER */
+
+        .footer {
+            text-align: center;
+            color: #555;
+            margin-top: 30px;
+            font-size: 12px;
+        }
+
+        @media(max-width:600px) {
+
+            .content {
+                padding: 20px;
+            }
+
+            .glitch {
+                font-size: 27px;
+            }
+
+            .photo-box {
+                width: 190px;
+                height: 190px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="matrix"></canvas>
+
+    <div class="terminal">
+
+        <!-- TERMINAL TOP -->
+
+        <div class="topbar">
+
+            <div class="dot red"></div>
+            <div class="dot yellow"></div>
+            <div class="dot green"></div>
+
+            <div class="title">
+                birthday.exe — terminal
+            </div>
+
+        </div>
+
+
+        <div class="content">
+
+            <!-- INTRO -->
+
+            <div class="line white">
+                > Initializing birthday.exe...
+            </div>
+
+            <div class="line">
+                > Connecting to friendship_server...
+            </div>
+
+            <div class="line cyan">
+                > Connection established ✓
+            </div>
+
+            <div class="line">
+                > Searching database...
+            </div>
+
+            <div class="line">
+                > Target identified:
+                <span id="name1"></span>
+            </div>
+
+            <div class="line yellow-text">
+                > WARNING: Extremely old friend detected ⚠
+            </div>
+
+            <div class="line">
+                > Running friendship analysis...
+            </div>
+
+
+            <!-- LOADING -->
+
+            <div class="loading">
+                <div class="loading-bar" id="bar"></div>
+            </div>
+
+            <div class="line cyan">
+                > Friendship level: 100%
+            </div>
+
+            <div class="line">
+                > Annoying level: 87%
+            </div>
+
+            <div class="line">
+                > Good memories: TOO MANY TO COUNT
+            </div>
+
+            <div class="line">
+                > Birthday protocol ready...
+            </div>
+
+
+            <!-- BUTTON -->
+
+            <button id="startButton" onclick="startBirthday()">
+                [ RUN BIRTHDAY.EXE ]
+            </button>
+
+
+            <!-- BIRTHDAY RESULT -->
+
+            <div id="birthday">
+
+                <div class="glitch">
+                    🎉 HAPPY BIRTHDAY 🎉
+                </div>
+
+                <div class="glitch">
+                    <span id="name2"></span>
+                </div>
+
+
+                <!-- PHOTO SPACE -->
+
+                <div class="photo-box">
+
+                    <!--
+                        LATER:
+                        Put your friend's photo in the same folder
+                        and name it friend.jpg
+
+                        Then remove display:none below.
+                    -->
+
+                    <img id="friendPhoto" src="friend.jpg">
+
+                    <div class="photo-placeholder" id="placeholder">
+                        📷<br><br>
+                        PHOTO NAHI MILA
+                        BHAI PHOTO ME KYE HI RAKHA HAI<br>
+                        
+                    </div>
+
+                </div>
+
+
+                <!-- MESSAGE -->
+
+                <div class="message">
+
+                    <p>> Birthday scan completed ✓</p>
+
+                    <br>
+
+                    <p>
+                        Congratulations <span id="name3"></span>!
+                        🎂
+                    </p>
+
+                    <p>
+                        You have successfully survived another year
+                        of making questionable decisions.
+                    </p>
+
+                    <br>
+
+                    <p>
+                        System has detected:
+                    </p>
+
+                    <p>
+                        ✔ Good friend<br>
+                        ✔ Professional time-waster<br>
+                        ✔ Certified idiot<br>
+                        ✔ Unlimited bakchodi
+                    </p>
+
+                    <br>
+
+                    <p>
+                        Friendship status:
+                        <span>PERMANENTLY INSTALLED ✓</span>
+                    </p>
+
+                    <br>
+
+                    <p>
+                        Have an amazing birthday! 🥳
+                    </p>
+
+                </div>
+
+
+                <!-- SECRET BUTTON -->
+
+                <button onclick="showSecret()">
+                    [ ACCESS SECRET MESSAGE ]
+                </button>
+
+                <div id="secret">
+                    🔓 ACCESS GRANTED
+                    <br><br>
+                    You owe me a birthday treat. 🍕😂
+                    Treat ke Baad
+                    KHELEGA
+                    KHELEGA FREE FIRE
+                </div>
+
+            </div>
+
+
+            <div class="footer">
+                system@friendship:~$ made_with_friendship
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        /* ==================================
+           EDIT THESE
+        ================================== */
+
+        const friendName = "ALOK (TERRY)";
+
+
+        /* ==================================
+           NAME
+        ================================== */
+
+        document.getElementById("name1").innerText = friendName;
+        document.getElementById("name2").innerText = friendName;
+        document.getElementById("name3").innerText = friendName;
+
+
+        /* ==================================
+           START BIRTHDAY
+        ================================== */
+
+        function startBirthday() {
+
+            const button =
+                document.getElementById("startButton");
+
+            const bar =
+                document.getElementById("bar");
+
+            const birthday =
+                document.getElementById("birthday");
+
+            button.disabled = true;
+
+            button.innerText =
+                "INITIALIZING...";
+
+            let progress = 0;
+
+            const loading =
+                setInterval(function () {
+
+                    progress += 4;
+
+                    bar.style.width =
+                        progress + "%";
+
+                    if (progress >= 100) {
+
+                        clearInterval(loading);
+
+                        button.innerText =
+                            "ACCESS GRANTED ✓";
+
+                        setTimeout(function () {
+
+                            birthday.style.display =
+                                "block";
+
+                            checkPhoto();
+
+                            createConfetti();
+
+                            birthday.scrollIntoView({
+                                behavior: "smooth"
+                            });
+
+                        }, 500);
+                    }
+
+                }, 70);
+        }
+
+
+        /* ==================================
+           PHOTO CHECK
+        ================================== */
+
+        function checkPhoto() {
+
+            const photo =
+                document.getElementById("friendPhoto");
+
+            const placeholder =
+                document.getElementById("placeholder");
+
+            photo.onload = function () {
+
+                photo.style.display =
+                    "block";
+
+                placeholder.style.display =
+                    "none";
+            };
+
+            photo.onerror = function () {
+
+                photo.style.display =
+                    "none";
+
+                placeholder.style.display =
+                    "block";
+            };
+        }
+
+
+        /* ==================================
+           SECRET MESSAGE
+        ================================== */
+
+        function showSecret() {
+
+            const secret =
+                document.getElementById("secret");
+
+            secret.style.display =
+                "block";
+        }
+
+
+        /* ==================================
+           CONFETTI
+        ================================== */
+
+        function createConfetti() {
+
+            const emojis = [
+                "🎉",
+                "🎂",
+                "🎈",
+                "🥳",
+                "✨",
+                "🎁"
+            ];
+
+            for (let i = 0; i < 60; i++) {
+
+                const item =
+                    document.createElement("div");
+
+                item.innerText =
+                    emojis[
+                        Math.floor(
+                            Math.random() * emojis.length
+                        )
+                    ];
+
+                item.style.position =
+                    "fixed";
+
+                item.style.left =
+                    Math.random() * 100 + "vw";
+
+                item.style.top =
+                    "-30px";
+
+                item.style.fontSize =
+                    "25px";
+
+                item.style.zIndex =
+                    "9999";
+
+                item.style.pointerEvents =
+                    "none";
+
+                document.body.appendChild(item);
+
+                const duration =
+                    2000 +
+                    Math.random() * 3000;
+
+                item.animate(
+                    [
+                        {
+                            transform:
+                                "translateY(0) rotate(0deg)"
+                        },
+                        {
+                            transform:
+                                "translateY(110vh) rotate(720deg)"
+                        }
+                    ],
+                    {
+                        duration: duration,
+                        easing: "linear"
+                    }
+                );
+
+                setTimeout(function () {
+
+                    item.remove();
+
+                }, duration);
+            }
+        }
+
+
+        /* ==================================
+           MATRIX EFFECT
+        ================================== */
+
+        const canvas =
+            document.getElementById("matrix");
+
+        const ctx =
+            canvas.getContext("2d");
+
+        canvas.width =
+            window.innerWidth;
+
+        canvas.height =
+            window.innerHeight;
+
+        const characters =
+            "01ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+        const fontSize = 14;
+
+        const columns =
+            canvas.width / fontSize;
+
+        const drops =
+            [];
+
+        for (let i = 0; i < columns; i++) {
+            drops[i] = 1;
+        }
+
+        function drawMatrix() {
+
+            ctx.fillStyle =
+                "rgba(0, 0, 0, 0.05)";
+
+            ctx.fillRect(
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
+
+            ctx.fillStyle =
+                "#00ff88";
+
+            ctx.font =
+                fontSize + "px monospace";
+
+            for (let i = 0; i < drops.length; i++) {
+
+                const text =
+                    characters[
+                        Math.floor(
+                            Math.random() *
+                            characters.length
+                        )
+                    ];
+
+                ctx.fillText(
+                    text,
+                    i * fontSize,
+                    drops[i] * fontSize
+                );
+
+                if (
+                    drops[i] * fontSize >
+                    canvas.height &&
+                    Math.random() > 0.975
+                ) {
+                    drops[i] = 0;
+                }
+
+                drops[i]++;
+            }
+        }
+
+        setInterval(drawMatrix, 40);
+
+
+        /* Resize */
+
+        window.addEventListener(
+            "resize",
+            function () {
+
+                canvas.width =
+                    window.innerWidth;
+
+                canvas.height =
+                    window.innerHeight;
+            }
+        );
+
+    </script>
+
+</body>
+
+</html>
+```
